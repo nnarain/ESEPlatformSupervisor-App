@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Packet {
 
-    private String contents;
+    private String contents = "";
 
     private Packet(String str)
     {
@@ -17,6 +17,11 @@ public class Packet {
     public enum Command
     {
         PING("P"),
+        ECHO("E"),
+        SERVO("S"),
+        STEPPER("ST"),
+        MTR_SPEED("MS"),
+        MTR_DIR("MD"),
         SYNC("Z");
 
         private String value;

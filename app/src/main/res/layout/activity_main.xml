@@ -3,186 +3,35 @@
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
-    android:gravity="right|end">
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sync"
-        android:id="@+id/bnSync"
+        android:text="Scan"
+        android:id="@+id/bnScan"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ping"
-        android:id="@+id/bnPing"
-        android:layout_alignTop="@+id/bnSync"
-        android:layout_centerHorizontal="true" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Camera"
-        android:id="@+id/tvCamera"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Discoverd Devices"
+        android:id="@+id/tvDevices"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
-    <Button
+    <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Echo"
-        android:id="@+id/bnEcho"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/etServo"
-        android:layout_below="@+id/tvCamera"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/bnEcho"
-        android:layout_alignEnd="@+id/bnEcho"
-        android:hint="Servo" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/etStepper"
-        android:layout_below="@+id/etServo"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/etServo"
-        android:layout_alignEnd="@+id/etServo"
-        android:hint="Stepper" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Update"
-        android:id="@+id/bnCameraUpdate"
-        android:layout_below="@+id/etStepper"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Motor"
-        android:id="@+id/tvMotor"
-        android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/bnPing"
-        android:layout_alignStart="@+id/bnPing" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/etMotorSpeed"
-        android:layout_below="@+id/tvMotor"
-        android:layout_alignLeft="@+id/tvMotor"
-        android:layout_alignStart="@+id/tvMotor"
-        android:layout_alignRight="@+id/bnPing"
-        android:layout_alignEnd="@+id/bnPing"
-        android:hint="Speed" />
-
-    <RadioGroup
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/rgMotorLeft"
-        android:layout_alignLeft="@+id/etMotorSpeed"
-        android:layout_alignStart="@+id/etMotorSpeed"
-        android:layout_alignTop="@+id/etStepper"
-        android:layout_alignRight="@+id/etMotorSpeed"
-        android:layout_alignEnd="@+id/etMotorSpeed"
-        android:layout_alignBottom="@+id/bnCameraUpdate">
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Left F"
-            android:id="@+id/rbMotorLeftForward"
-            android:checked="false" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Left B"
-            android:id="@+id/rbMotorLeftBackward"
-            android:checked="false" />
-
-    </RadioGroup>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Clear"
-        android:id="@+id/bnClear"
-        android:layout_above="@+id/bnSync"
-        android:layout_alignRight="@+id/bnSync"
-        android:layout_alignEnd="@+id/bnSync"
-        android:layout_alignLeft="@+id/bnSync"
-        android:layout_alignStart="@+id/bnSync" />
-
-    <RadioGroup
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_toRightOf="@+id/etMotorSpeed"
-        android:layout_toEndOf="@+id/etMotorSpeed"
-        android:layout_alignTop="@+id/rgMotorLeft"
-        android:layout_alignBottom="@+id/rgMotorLeft"
-        android:id="@+id/rgMotorRight">
-
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Right F"
-            android:id="@+id/rbMotorRightForward"
-            android:checked="false" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Right B"
-            android:id="@+id/rbMotorRightBackward"
-            android:checked="false" />
-    </RadioGroup>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Update"
-        android:id="@+id/bnUpdateMotor"
-        android:layout_below="@+id/rgMotorLeft"
-        android:layout_alignLeft="@+id/rgMotorLeft"
-        android:layout_alignStart="@+id/rgMotorLeft"
-        android:layout_alignRight="@+id/rgMotorRight"
-        android:layout_alignEnd="@+id/rgMotorRight" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Platform Response"
-        android:id="@+id/tvPlatformResponse"
-        android:layout_below="@+id/bnUpdateMotor"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_above="@+id/bnClear"
-        android:layout_alignRight="@+id/bnUpdateMotor"
-        android:layout_alignEnd="@+id/bnUpdateMotor" />
+        android:id="@+id/lvDevices"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/tvDevices"
+        android:layout_above="@+id/bnScan" />
 
 </RelativeLayout>
