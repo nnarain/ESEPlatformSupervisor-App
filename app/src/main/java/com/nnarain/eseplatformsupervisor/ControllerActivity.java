@@ -13,6 +13,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.SeekBar;
+
+import com.nnarain.eseplatformsupervisor.client.BluetoothPacketStream;
+import com.nnarain.eseplatformsupervisor.client.Packet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,122 +26,169 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class ControllerActivity extends Activity {
+public class ControllerActivity extends Activity implements SeekBar.OnSeekBarChangeListener{
 
     private BTConnectThread tConnect;
 
     // streams
-    private BluetoothSocket socket;
-    private InputStream rx = null;
-    private OutputStream tx = null;
+   // private BluetoothSocket socket;
+   // private InputStream rx = null;
+   // private OutputStream tx = null;
+    BluetoothPacketStream stream;
 
     private String address;
 
     private boolean isConnected = false;
 
+    // UI Components
+    private Button bnServoNeg, bnServoPos;
+
+    private Button bnStepNeg, bnStepPos;
+
+    private SeekBar sbMotorLeft, sbMotorRight;
+    private int motorLVal, motorRVal;
+    private boolean flagUpdateMotors;
+
     //
     private static final String TAG = ControllerActivity.class.getSimpleName();
 
     private Timer update;
-    private final TimerTask updateTask = new TimerTask() {
-        @Override
-        public void run() {
-
-            try
-            {
-                tx.write(("<P>").getBytes());
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
-
-        }
-    };
+    private TimerTask updateTask;
 
     private static final long INIT_DELAY     = 500;
     private static final long TIMER_INTERVAL = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_controller);
+
+        // get ui components
+        bnServoNeg   = (Button)findViewById(R.id.bnServoNeg);
+        bnServoPos   = (Button)findViewById(R.id.bnServoPos);
+
+        bnStepNeg    = (Button)findViewById(R.id.bnStepNeg);
+        bnStepPos    = (Button)findViewById(R.id.bnStepPos);
+
+        sbMotorLeft  = (SeekBar)findViewById(R.id.sbMotorLeft);
+        sbMotorRight = (SeekBar)findViewById(R.id.sbMotorRight);
 
         // retrieve the device address
         final Bundle extras = this.getIntent().getExtras();
         address = extras.getString(MainActivity.EXTRA_ADDRESS);
 
-        // create the update timer task
+        stream = new BluetoothPacketStream(address);
+
         update = new Timer();
+        updateTask = makeUpdateTask();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        connect(address);
+        Log.d(TAG, "scheduling task...");
+        update.schedule(updateTask, TIMER_INTERVAL, TIMER_INTERVAL);
+
+        stream.connect();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        update.cancel();
+        Log.d(TAG, "cancelling task...");
 
-        try
-        {
-            if(socket != null) socket.close();
-            if(rx != null) rx.close();
-            if(tx != null) tx.close();
+        updateTask.cancel();
+        updateTask = makeUpdateTask();
 
-            if(tConnect != null)
-            {
-                tConnect.join();
-                tConnect = null;
+        update.purge();
+
+        stream.close();
+    }
+
+    private TimerTask makeUpdateTask()
+    {
+        return new TimerTask() {
+            @Override
+            public void run() {
+
+                Packet.Builder builder = new Packet.Builder();
+                Packet ping = builder.setCommand(Packet.Command.PING).build();
+
+                try
+                {
+                    if(stream.isConnected())
+                    {
+                        stream.write(ping);
+                    }
+                }
+                catch(IOException e)
+                {
+                    e.printStackTrace();
+                }
+
             }
-        }
-        catch(IOException e)
+        };
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+        if(seekBar.getId() == sbMotorLeft.getId())
         {
+            motorLVal = progress;
         }
-        catch (InterruptedException e)
+        else if(seekBar.getId() == sbMotorRight.getId())
         {
+            motorRVal = progress;
         }
+
+        flagUpdateMotors = true;
 
     }
 
-    private void connect(String addr)
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    private void updateMotors()
     {
-        // stop looking for devices
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        adapter.cancelDiscovery();
+        Packet.Builder builder = new Packet.Builder();
 
-        // create a device from address
-        BluetoothDevice device = adapter.getRemoteDevice(addr);
+        int speedR = (motorRVal > 50) ? motorRVal : 255 - motorRVal;
+        int speedL = (motorLVal > 50) ? motorLVal : 255 - motorLVal;
 
-        // create the connection thread
-        tConnect = new BTConnectThread(device, new BTConnectThread.OnConnectListener()
-        {
-            @Override
-            public void onConnect(BluetoothSocket socket, InputStream in, OutputStream out) {
-                ControllerActivity.this.socket = socket;
-                ControllerActivity.this.rx = in;
-                ControllerActivity.this.tx = out;
-                ControllerActivity.this.isConnected = true;
+        // build motor direction packets
+        int d;
+        d = (motorLVal > 50) ? 1 : 2;
 
-                ControllerActivity.this.update.schedule(updateTask, TIMER_INTERVAL, TIMER_INTERVAL);
+        builder
+                .setCommand(Packet.Command.MTR_DIR)
+                .addArgument(0)
+                .addArgument(d);
 
-                Log.d(TAG, "Connected");
-            }
+        Packet leftMotorPacket = builder.build();
 
-            @Override
-            public void onConnectFailed() {
-                Log.d(TAG, "Device Connect Failed!!!");
-                finish();
-            }
-        });
+        builder.reset();
 
-        tConnect.start();
+        d = (motorRVal > 50) ? 1 : 2;
+
+        builder
+                .setCommand(Packet.Command.MTR_DIR)
+                .addArgument(1)
+                .addArgument(d);
+
+        Packet rightMotorPacket = builder.build();
+
+        flagUpdateMotors = false;
     }
 
     @Override

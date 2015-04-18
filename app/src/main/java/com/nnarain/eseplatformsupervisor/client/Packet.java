@@ -14,6 +14,11 @@ public class Packet {
         this.contents = str;
     }
 
+    public String getContents()
+    {
+        return contents;
+    }
+
     public enum Command
     {
         PING("P"),
@@ -36,7 +41,7 @@ public class Packet {
         }
     }
 
-    public class Builder
+    public static class Builder
     {
         private String command;
         private ArrayList<String> arguments;
@@ -70,6 +75,18 @@ public class Packet {
         {
             this.command = cmd.getValue();
             return this;
+        }
+
+        public Packet.Builder addArgument(int val)
+        {
+            this.arguments.add(String.valueOf(val));
+            return this;
+        }
+
+        public void reset()
+        {
+            this.command = "";
+            this.arguments.clear();
         }
     }
 

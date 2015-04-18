@@ -15,8 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="bottom"
-            android:max="100"
-            android:progress="50"
+            android:max="255"
+            android:progress="128"
             android:indeterminate="false"
             android:id="@+id/sbMotorLeft" />
 
@@ -80,8 +80,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="bottom"
-            android:max="100"
-            android:progress="50"
+            android:max="255"
+            android:progress="128"
             android:indeterminate="false"
             android:id="@+id/sbMotorRight" />
 
