@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Left Motor Control -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_weight="1">
+
+        <com.nnarain.eseplatformsupervisor.views.VerticalSeekBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:max="255"
+            android:progress="128"
+            android:indeterminate="false"
+            android:id="@+id/sbMotorLeft" />
+
+        </LinearLayout>
+
+    <!-- Camera Module Control -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="0">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-\nServo"
+                android:id="@+id/bnServoNeg" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+\nServo"
+                android:id="@+id/bnServoPos" />
+
+            </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-\nStep"
+                android:id="@+id/bnStepNeg" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+\nStep"
+                android:id="@+id/bnStepPos" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    <!-- Right Motor Control -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_weight="1">
+
+        <com.nnarain.eseplatformsupervisor.views.VerticalSeekBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:max="255"
+            android:progress="128"
+            android:indeterminate="false"
+            android:id="@+id/sbMotorRight" />
+
+        </LinearLayout>
+
+</LinearLayout>
