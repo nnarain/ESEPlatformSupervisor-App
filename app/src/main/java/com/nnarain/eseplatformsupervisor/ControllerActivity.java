@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.nnarain.eseplatformsupervisor.client.BTConnectThread;
 import com.nnarain.eseplatformsupervisor.client.BluetoothPacketStream;
@@ -19,19 +20,19 @@ import java.util.TimerTask;
 
 public class ControllerActivity extends Activity implements SeekBar.OnSeekBarChangeListener{
 
-    private BTConnectThread tConnect;
-
     // streams
     BluetoothPacketStream stream;
-
-    private String address;
 
     private boolean isConnected = false;
 
     // UI Components
     private Button bnServoNeg, bnServoPos;
+    private int servoAngle = 0;
+    private int servoSpeed = 5;
 
     private Button bnStepNeg, bnStepPos;
+    private int stepAngle = 0;
+    private int stepSpeed = 5;
 
     private SeekBar sbMotorLeft, sbMotorRight;
     private int motorLVal, motorRVal;
@@ -44,7 +45,7 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
     private TimerTask updateTask;
 
     private static final long INIT_DELAY     = 500;
-    private static final long TIMER_INTERVAL = 1000;
+    private static final long TIMER_INTERVAL = 250;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +60,12 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
         bnStepNeg    = (Button)findViewById(R.id.bnStepNeg);
         bnStepPos    = (Button)findViewById(R.id.bnStepPos);
 
-        sbMotorLeft  = (SeekBar)findViewById(R.id.sbMotorLeft);
-        sbMotorRight = (SeekBar)findViewById(R.id.sbMotorRight);
+        ((SeekBar)findViewById(R.id.sbMotorLeft)).setOnSeekBarChangeListener(this);
+        ((SeekBar)findViewById(R.id.sbMotorRight)).setOnSeekBarChangeListener(this);
 
         // retrieve the device address
         final Bundle extras = this.getIntent().getExtras();
-        address = extras.getString(MainActivity.EXTRA_ADDRESS);
+        String address = extras.getString(MainActivity.EXTRA_ADDRESS);
 
         stream = new BluetoothPacketStream(address);
 
@@ -102,14 +103,39 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
             @Override
             public void run() {
 
-                Packet.Builder builder = new Packet.Builder();
-                Packet ping = builder.setCommand(Packet.Command.PING).build();
-
                 try
                 {
                     if(stream.isConnected())
                     {
-                        stream.write(ping);
+                        if(flagUpdateMotors)
+                        {
+                            updateMotors();
+                        }
+
+                        // servo control
+                        if(bnServoPos.isPressed())
+                        {
+                            servoAngle = inc(servoAngle, servoSpeed, 180);
+                            updateServo(servoAngle);
+                        }
+                        else if(bnServoNeg.isPressed())
+                        {
+                            servoAngle = inc(servoAngle, -servoSpeed, 180);
+                            updateServo(servoAngle);
+                        }
+
+                        // stepper control
+                        if(bnStepPos.isPressed())
+                        {
+                            stepAngle = inc(stepAngle, stepSpeed, 180);
+                            updateStepper(stepAngle);
+                        }
+                        else if(bnStepNeg.isPressed())
+                        {
+                            stepAngle = inc(stepAngle, -stepSpeed, 180);
+                            updateStepper(stepAngle);
+                        }
+
                     }
                 }
                 catch(IOException e)
@@ -124,17 +150,18 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        if(seekBar.getId() == sbMotorLeft.getId())
+        // check which seek bar it is and update the progress
+        switch(seekBar.getId())
         {
-            motorLVal = progress;
-        }
-        else if(seekBar.getId() == sbMotorRight.getId())
-        {
-            motorRVal = progress;
+            case R.id.sbMotorLeft:
+                motorLVal = progress;
+                break;
+            case R.id.sbMotorRight:
+                motorRVal = progress;
+                break;
         }
 
         flagUpdateMotors = true;
-
     }
 
     @Override
@@ -147,12 +174,49 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
 
     }
 
-    private void updateMotors()
+    private void updateServo(int angle) throws IOException
+    {
+        Packet.Builder builder = new Packet.Builder();
+
+        builder
+                .setCommand(Packet.Command.SERVO)
+                .addArgument(angle);
+
+        Packet servo = builder.build();
+
+        stream.write(servo);
+    }
+
+    private void updateStepper(int angle) throws IOException
+    {
+        Packet.Builder builder = new Packet.Builder();
+
+        builder
+                .setCommand(Packet.Command.STEPPER)
+                .addArgument(angle);
+
+        Packet step = builder.build();
+
+        stream.write(step);
+    }
+
+    private void updateMotors() throws IOException
     {
         Packet.Builder builder = new Packet.Builder();
 
         int speedR = (motorRVal > 50) ? motorRVal : 255 - motorRVal;
         int speedL = (motorLVal > 50) ? motorLVal : 255 - motorLVal;
+
+        int speed = Math.max(speedL, speedR);
+
+        // build motor speed packet
+        builder
+                .setCommand(Packet.Command.MTR_SPEED)
+                .addArgument(speed);
+
+        Packet speedPacket = builder.build();
+
+        builder.reset();
 
         // build motor direction packets
         int d;
@@ -176,7 +240,22 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
 
         Packet rightMotorPacket = builder.build();
 
+        // send the motor packets
+        stream.write(speedPacket);
+        stream.write(leftMotorPacket);
+        stream.write(rightMotorPacket);
+
         flagUpdateMotors = false;
+    }
+
+    private int inc(int v, int inc, int limit)
+    {
+        v += inc;
+
+        if(v < 0)
+            v = 0;
+
+        return v % limit;
     }
 
     @Override
@@ -201,6 +280,10 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
                 e.printStackTrace();
             }
 
+        }
+        else
+        {
+            Toast.makeText(this, "Not Connected", Toast.LENGTH_LONG).show();
         }
     }
 
