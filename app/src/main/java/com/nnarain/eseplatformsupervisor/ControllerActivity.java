@@ -207,6 +207,17 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
         int speedR = (motorRVal > 50) ? motorRVal : 255 - motorRVal;
         int speedL = (motorLVal > 50) ? motorLVal : 255 - motorLVal;
 
+        int speed = Math.max(speedL, speedR);
+
+        // build motor speed packet
+        builder
+                .setCommand(Packet.Command.MTR_SPEED)
+                .addArgument(speed);
+
+        Packet speedPacket = builder.build();
+
+        builder.reset();
+
         // build motor direction packets
         int d;
         d = (motorLVal > 50) ? 1 : 2;
@@ -230,8 +241,9 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
         Packet rightMotorPacket = builder.build();
 
         // send the motor packets
+        stream.write(speedPacket);
         stream.write(leftMotorPacket);
-    //    stream.write(rightMotorPacket);
+        stream.write(rightMotorPacket);
 
         flagUpdateMotors = false;
     }
