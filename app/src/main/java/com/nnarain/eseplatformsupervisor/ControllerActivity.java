@@ -1,27 +1,18 @@
 package com.nnarain.eseplatformsupervisor;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
 
+import com.nnarain.eseplatformsupervisor.client.BTConnectThread;
 import com.nnarain.eseplatformsupervisor.client.BluetoothPacketStream;
 import com.nnarain.eseplatformsupervisor.client.Packet;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.BindException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,9 +22,6 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
     private BTConnectThread tConnect;
 
     // streams
-   // private BluetoothSocket socket;
-   // private InputStream rx = null;
-   // private OutputStream tx = null;
     BluetoothPacketStream stream;
 
     private String address;
@@ -198,6 +186,24 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
         return true;
     }
 
+    private void sync()
+    {
+        if(stream.isConnected())
+        {
+            Packet sync = new Packet.Builder().setCommand(Packet.Command.SYNC).build();
+
+            try
+            {
+                stream.write(sync);
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -205,9 +211,11 @@ public class ControllerActivity extends Activity implements SeekBar.OnSeekBarCha
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id)
+        {
+            case R.id.menu_controller_sync:
+                sync();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

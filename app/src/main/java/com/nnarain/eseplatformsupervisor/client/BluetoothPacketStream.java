@@ -5,8 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import com.nnarain.eseplatformsupervisor.BTConnectThread;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,9 +87,7 @@ public class BluetoothPacketStream implements PacketStream {
     @Override
     public void write(Packet packet) throws IOException{
 
-        String s = packet.getContents();
-
-        Log.d(TAG, "Writing: " + s);
+        Log.d(TAG, "Writing: " + packet.getContents());
 
         tx.write(packet.getContents().getBytes());
 

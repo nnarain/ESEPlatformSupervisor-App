@@ -1,4 +1,4 @@
-package com.nnarain.eseplatformsupervisor;
+package com.nnarain.eseplatformsupervisor.client;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -14,7 +14,9 @@ import java.util.UUID;
  */
 public class BTConnectThread extends Thread {
 
-    // connection interface
+    /**
+     * Connection Status Callback
+     * */
     public interface OnConnectListener
     {
         public void onConnect(BluetoothSocket socket, InputStream in, OutputStream out);
